@@ -481,8 +481,8 @@
                     const change = parseFloat(stock.Change);
                     const changePercent = (change / (price - change)) * 100;
                     
-                    // 模擬KD和均線數據（因為沒有歷史數據）
-                    const kd = `${Math.floor(Math.random() * 30) + 50}, ${Math.floor(Math.random() * 30) + 50}`;
+            // 模擬KD和均線數據（因為沒有歷史數據）
+                    const kd = '65, 58';
                     const ma20 = (price * 0.98).toFixed(2);
                     const ma20Diff = ((price - parseFloat(ma20)) / parseFloat(ma20) * 100).toFixed(2);
                     
