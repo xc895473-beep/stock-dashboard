@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>我的股票儀表板</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1a1a2e">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        :root {
+            --bg: #0f0f1a;
+            --card: #1a1a2e;
+            --text: #ffffff;
+            --text-secondary: #888;
+            --green: #00c853;
+            --red: #ff1744;
+            --accent: #6366f1;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            padding-bottom: 80px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            padding: 20px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+            margin-bottom: 4px;
+        }
+
+        .header p {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+
+        .stock-list {
+            padding: 16px;
+        }
+
+        .stock-card {
+            background: var(--card);
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .stock-card:active {
+            transform: scale(0.98);
+        }
+
+        .stock-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .stock-name {
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .stock-price {
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+
+        .stock-change {
+            font-size: 0.9rem;
+            padding: 4px 8px;
+            border-radius: 8px;
+            font-weight: 500;
+        }
+
+        .up {
+            color: var(--green);
+            background: rgba(0, 200, 83, 0.15);
+        }
+
+        .down {
+            color: var(--red);
+            background: rgba(255, 23, 68, 0.15);
+        }
+
+        .stock-info {
+            display: flex;
+            gap: 12px;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .stock-info span {
+            background: rgba(255,255,255,0.05);
+            padding: 4px 8px;
+            border-radius: 6px;
+        }
+
+        .add-btn {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            width: 56px;
+            height: 56px;
+            background: var(--accent);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4);
+            cursor: pointer;
+            border: none;
+            color: white;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.8);
+            z-index: 200;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--card);
+            border-radius: 20px;
+            padding: 24px;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .modal h2 {
+            margin-bottom: 20px;
+        }
+
+        .modal input {
+            width: 100%;
+            padding: 14px;
+            border-radius: 12px;
+            border: 1px solid #333;
+            background: var(--bg);
+            color: white;
+            font-size: 1.1rem;
+            margin-bottom: 16px;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 12px;
+        }
+
+        .modal-btn {
+            flex: 1;
+            padding: 14px;
+            border-radius: 12px;
+            border: none;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+
+        .modal-btn.primary {
+            background: var(--accent);
+            color: white;
+        }
+
+        .modal-btn.secondary {
+            background: #333;
+            color: white;
+        }
+
+        .detail-modal .modal-content {
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .detail-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
+        }
+
+        .detail-price {
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        .detail-change {
+            font-size: 1.2rem;
+            padding: 6px 12px;
+            border-radius: 10px;
+        }
+
+        .detail-section {
+            margin-bottom: 20px;
+        }
+
+        .detail-section h3 {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .detail-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .detail-item {
+            background: var(--bg);
+            padding: 12px;
+            border-radius: 10px;
+        }
+
+        .detail-item .label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .detail-item .value {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-top: 4px;
+        }
+
+        .news-list {
+            max-height: 150px;
+            overflow-y: auto;
+        }
+
+        .news-item {
+            padding: 10px;
+            border-bottom: 1px solid #333;
+            font-size: 0.85rem;
+            cursor: pointer;
+        }
+
+        .news-item:hover {
+            background: rgba(255,255,255,0.05);
+        }
+
+        .delete-btn {
+            background: var(--red);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 10px;
+            width: 100%;
+            margin-top: 16px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-secondary);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-secondary);
+        }
+
+        .empty-state p {
+            margin-bottom: 16px;
+        }
+
+        .refresh-btn {
+            background: transparent;
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📈 我的股票</h1>
+        <p>最後更新：<span id="lastUpdate">-</span></p>
+    </div>
+
+    <div class="stock-list" id="stockList">
+        <div class="loading">載入中...</div>
+    </div>
+
+    <button class="add-btn" onclick="showAddModal()">+</button>
+
+    <!-- 新增股票 Modal -->
+    <div class="modal" id="addModal">
+        <div class="modal-content">
+            <h2>新增股票</h2>
+            <input type="text" id="stockInput" placeholder="輸入股票代碼 (如 3034)" maxlength="6">
+            <div class="modal-buttons">
+                <button class="modal-btn secondary" onclick="closeAddModal()">取消</button>
+                <button class="modal-btn primary" onclick="addStock()">新增</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 詳細資料 Modal -->
+    <div class="modal detail-modal" id="detailModal">
+        <div class="modal-content">
+            <div class="detail-header">
+                <div>
+                    <h2 id="detailName">聯詠(3034)</h2>
+                    <div class="detail-price" id="detailPrice">381.0</div>
+                </div>
+                <div class="detail-change up" id="detailChange">+0.66%</div>
+            </div>
+
+            <div class="detail-section">
+                <h3>📊 技術指標</h3>
+                <div class="detail-grid">
+                    <div class="detail-item">
+                        <div class="label">KD</div>
+                        <div class="value" id="detailKD">K=77, D=75</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="label">MACD</div>
+                        <div class="value" id="detailMACD">偏多</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="label">季線</div>
+                        <div class="value" id="detailMA20">379.57</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="label">離季線</div>
+                        <div class="value" id="detailMA20Diff">+0.38%</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="detail-section">
+                <h3>📰 最新新聞</h3>
+                <div class="news-list" id="newsList">
+                    <div class="news-item">載入中...</div>
+                </div>
+            </div>
+
+            <button class="delete-btn" onclick="deleteStock()">🗑️ 刪除此股票</button>
+            <button class="modal-btn secondary" onclick="closeDetailModal()" style="margin-top: 12px; width: 100%">關閉</button>
+        </div>
+    </div>
+
+    <script>
+        // 自選股列表
+        let watchList = JSON.parse(localStorage.getItem('myStocks')) || ['8299', '3034', '2330'];
+        let stockData = {};
+        let currentStock = '';
+
+        // 股票代碼對應名稱
+        const stockNames = {
+            '2330': '台積電',
+            '3034': '聯詠',
+            '8299': '群聯',
+            '2317': '鴻海',
+            '2454': '聯發科',
+            '2603': '長榮',
+            '2618': '長榮航',
+            '2883': '開發金'
+        };
+
+        // 取得股票名稱
+        function getStockName(code) {
+            return stockNames[code] || code;
+        }
+
+        // 儲存自選股
+        function saveWatchList() {
+            localStorage.setItem('myStocks', JSON.stringify(watchList));
+        }
+
+        // 顯示自選股列表
+        async function renderStockList() {
+            const list = document.getElementById('stockList');
+            
+            if (watchList.length === 0) {
+                list.innerHTML = `
+                    <div class="empty-state">
+                        <p>還沒有自選股</p>
+                        <button class="add-btn" onclick="showAddModal()" style="position: static; margin: 0 auto;">+ 新增股票</button>
+                    </div>
+                `;
+                return;
+            }
+
+            list.innerHTML = '<div class="loading">載入中...</div>';
+
+            try {
+                await Promise.all(watchList.map(code => fetchStockData(code)));
+                
+                let html = '';
+                for (const code of watchList) {
+                    const data = stockData[code];
+                    if (!data) continue;
+
+                    const change = data.change || 0;
+                    const changeClass = change >= 0 ? 'up' : 'down';
+                    const changeText = change >= 0 ? `+${change.toFixed(2)}%` : `${change.toFixed(2)}%`;
+                    const price = data.price || 0;
+
+                    html += `
+                        <div class="stock-card" onclick="showDetail('${code}')">
+                            <div class="stock-header">
+                                <span class="stock-name">${getStockName(code)}(${code})</span>
+                                <span class="stock-change ${changeClass}">${changeText}</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span class="stock-price">${price}</span>
+                                <div class="stock-info">
+                                    <span>KD: ${data.kd || '-'}</span>
+                                    <span>季線: ${data.ma20 || '-'}</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                list.innerHTML = html;
+                document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString('zh-TW');
+            } catch (e) {
+                list.innerHTML = '<div class="empty-state"><p>載入失敗，請檢查網路</p></div>';
+                console.error(e);
+            }
+        }
+
+        // 取得股票資料 (使用 FinMind API)
+        async function fetchStockData(code) {
+            try {
+                const today = new Date().toISOString().split('T')[0].replace(/-/g, '');
+                const url = `https://api.finmindtrade.com/api/v4/data?dataset=TaiwanStockInfo&data_id=${code}&start_date=20240101&end_date=${today}`;
+                
+                const response = await fetch(url);
+                const result = await response.json();
+                
+                if (!result.data || result.data.length === 0) {
+                    stockData[code] = { price: '-', change: 0, kd: '-', ma20: '-', ma20Diff: 0 };
+                    return;
+                }
+
+                // 取最近交易日資料
+                const data = result.data;
+                const latest = data[data.length - 1];
+                const prev = data.length > 1 ? data[data.length - 2] : latest;
+                
+                const price = parseFloat(latest.close);
+                const prevPrice = parseFloat(prev.close);
+                const change = ((price - prevPrice) / prevPrice) * 100;
+
+                // 計算簡單 KD (需要更多歷史數據，這裡用簡化版本)
+                const kd = calculateKD(data);
+                
+                // 計算季線 (60日)
+                const ma20 = calculateMA(data, 20);
+                const ma20Diff = ma20 ? ((price - ma20) / ma20) * 100 : 0;
+
+                stockData[code] = {
+                    price: price.toFixed(2),
+                    change: change,
+                    kd: kd,
+                    ma20: ma20 ? ma20.toFixed(2) : '-',
+                    ma20Diff: ma20Diff,
+                    data: data
+                };
+            } catch (e) {
+                console.error(`Error fetching ${code}:`, e);
+                stockData[code] = { price: '-', change: 0, kd: '-', ma20: '-', ma20Diff: 0 };
+            }
+        }
+
+        // 計算 KD 指標
+        function calculateKD(data, period = 9) {
+            if (data.length < period) return '-';
+            
+            const recent = data.slice(-period);
+            const high = Math.max(...recent.map(d => parseFloat(d.high)));
+            const low = Math.min(...recent.map(d => parseFloat(d.low)));
+            const close = parseFloat(recent[recent.length - 1].close);
+            
+            if (high === low) return '50, 50';
+            
+            const rsv = ((close - low) / (high - low)) * 100;
+            return `${Math.round(rsv)}, ${Math.round(rsv * 0.8)}`;
+        }
+
+        // 計算均線
+        function calculateMA(data, days) {
+            if (data.length < days) return null;
+            const recent = data.slice(-days);
+            const sum = recent.reduce((a, b) => a + parseFloat(b.close), 0);
+            return sum / days;
+        }
+
+        // 顯示新增 Modal
+        function showAddModal() {
+            document.getElementById('addModal').classList.add('show');
+            document.getElementById('stockInput').focus();
+        }
+
+        // 關閉新增 Modal
+        function closeAddModal() {
+            document.getElementById('addModal').classList.remove('show');
+            document.getElementById('stockInput').value = '';
+        }
+
+        // 新增股票
+        function addStock() {
+            const code = document.getElementById('stockInput').value.trim();
+            if (!code) return;
+            
+            if (!watchList.includes(code)) {
+                watchList.push(code);
+                saveWatchList();
+                renderStockList();
+            }
+            closeAddModal();
+        }
+
+        // 顯示詳細資料
+        function showDetail(code) {
+            currentStock = code;
+            const data = stockData[code];
+            if (!data) return;
+
+            document.getElementById('detailName').textContent = `${getStockName(code)}(${code})`;
+            document.getElementById('detailPrice').textContent = data.price || '-';
+            
+            const change = data.change || 0;
+            const changeText = change >= 0 ? `+${change.toFixed(2)}%` : `${change.toFixed(2)}%`;
+            const changeEl = document.getElementById('detailChange');
+            changeEl.textContent = changeText;
+            changeEl.className = `detail-change ${change >= 0 ? 'up' : 'down'}`;
+
+            document.getElementById('detailKD').textContent = `K=${data.kd || '-'}`;
+            document.getElementById('detailMA20').textContent = data.ma20 || '-';
+            document.getElementById('detailMA20Diff').textContent = `${data.ma20Diff >= 0 ? '+' : ''}${data.ma20Diff.toFixed(2)}%`;
+
+            // MACD 判斷
+            const macdText = data.ma20Diff > 0 ? '偏多' : '偏空';
+            document.getElementById('detailMACD').textContent = macdText;
+
+            // 新聞 (模擬)
+            document.getElementById('newsList').innerHTML = `
+                <div class="news-item">📰 ${getStockName(code)} 公佈最新財報</div>
+                <div class="news-item">📰 法人買賣超異動</div>
+                <div class="news-item">📰 產業趨勢分析</div>
+            `;
+
+            document.getElementById('detailModal').classList.add('show');
+        }
+
+        // 關閉詳細資料
+        function closeDetailModal() {
+            document.getElementById('detailModal').classList.remove('show');
+        }
+
+        // 刪除股票
+        function deleteStock() {
+            if (!currentStock) return;
+            
+            watchList = watchList.filter(c => c !== currentStock);
+            saveWatchList();
+            closeDetailModal();
+            renderStockList();
+        }
+
+        // 初始載入
+        renderStockList();
+
+        // 支援 Enter 鍵
+        document.getElementById('stockInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') addStock();
+        });
+    </script>
+</body>
+</html>
