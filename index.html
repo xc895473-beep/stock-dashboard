@@ -462,8 +462,9 @@
         // 取得股票資料 (使用 FinMind API)
         async function fetchStockData(code) {
             try {
-                const today = new Date().toISOString().split('T')[0].replace(/-/g, '');
-                const url = `https://api.finmindtrade.com/api/v4/data?dataset=TaiwanStockInfo&data_id=${code}&start_date=20240101&end_date=${today}`;
+                const today = new Date().toISOString().split('T')[0];
+                const startDate = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+                const url = `https://api.finmindtrade.com/api/v4/data?dataset=TaiwanStockPrice&data_id=${code}&start_date=${startDate}&end_date=${today}`;
                 
                 const response = await fetch(url);
                 const result = await response.json();
