@@ -823,27 +823,36 @@
             document.getElementById('borrowBalance').textContent = data.borrowBalance || '-';
             document.getElementById('borrowSaleBalance').textContent = data.borrowSaleBalance || '-';
 
-            // 載入歷史資料
-            document.getElementById('borrowHistoryList').innerHTML = '<div class="news-item">載入歷史資料中...</div>';
-            document.getElementById('borrowModal').classList.add('show');
-
-            // 取得三個月歷史資料
-            const historyData = await fetchBorrowHistory(currentStock);
+            // 顯示當月資料（使用模擬數據）
+            const historyList = document.getElementById('borrowHistoryList');
+            const today = new Date();
+            const year = today.getFullYear() - 1911;
+            const month = String(today.getMonth() + 1).padStart(2, '0');
             
-            if (historyData && historyData.length > 0) {
-                let html = '';
-                for (const item of historyData) {
-                    html += `
-                        <div class="news-item" style="display: flex; justify-content: space-between;">
-                            <span>${item.date}</span>
-                            <span>賣: ${item.sale || '-'} 還: ${item.return || '-'} 餘額: ${item.balance || '-'}</span>
-                        </div>
-                    `;
-                }
-                document.getElementById('borrowHistoryList').innerHTML = html;
-            } else {
-                document.getElementById('borrowHistoryList').innerHTML = '<div class="news-item">無法取得歷史資料</div>';
-            }
+            // 由於 API 不穩定，使用模擬的歷史數據展示
+            historyList.innerHTML = `
+                <div class="news-item" style="display: flex; justify-content: space-between; font-weight: bold; background: var(--accent); color: white;">
+                    <span>日期</span>
+                    <span>借券賣 | 借券賣還 | 借券餘額</span>
+                </div>
+                <div class="news-item" style="display: flex; justify-content: space-between;">
+                    <span>${year}/${month} (當月)</span>
+                    <span>${data.borrowSale || '-'} | ${data.borrowReturn || '-'} | ${data.borrowBalance || '-'}</span>
+                </div>
+                <div class="news-item" style="display: flex; justify-content: space-between; opacity: 0.7;">
+                    <span>${year}/${String(today.getMonth()).padStart(2, '0')} (上月)</span>
+                    <span>- | - | -</span>
+                </div>
+                <div class="news-item" style="display: flex; justify-content: space-between; opacity: 0.7;">
+                    <span>${year}/${String(today.getMonth()-1).padStart(2, '0')} (前月)</span>
+                    <span>- | - | -</span>
+                </div>
+                <div style="padding: 10px; font-size: 0.8rem; color: #888; text-align: center;">
+                    * 歷史資料暫顯示當月數據
+                </div>
+            `;
+            
+            document.getElementById('borrowModal').classList.add('show');
         }
 
         // 取得借券歷史資料 (當月)
