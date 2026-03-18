@@ -764,11 +764,8 @@
             document.getElementById('detailShortRatio').textContent = data.shortRatio || '-';
             document.getElementById('detailForeign').textContent = data.foreign || '-';
             
-            // 借券資料
-            document.getElementById('detailBorrowSale').textContent = data.borrowSale || '-';
-            document.getElementById('detailBorrowReturn').textContent = data.borrowReturn || '-';
-            document.getElementById('detailBorrowBalance').textContent = data.borrowBalance || '-';
-            document.getElementById('detailBorrowSaleBalance').textContent = data.borrowSaleBalance || '-';
+            // 借券資料 - 這些元素現在在 borrowModal 中
+            // 不需要在 detailModal 中設置
             
             // 法人買賣超顏色
             const foreignEl = document.getElementById('detailForeign');
