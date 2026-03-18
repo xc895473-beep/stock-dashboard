@@ -738,38 +738,43 @@
                 return;
             }
 
-            document.getElementById('detailName').textContent = `${getStockName(code)}(${code})`;
-            document.getElementById('detailPrice').textContent = data.price || '-';
+            // 安全地設置元素內容
+            const setContent = (id, value) => {
+                const el = document.getElementById(id);
+                if (el) el.textContent = value;
+            };
+
+            setContent('detailName', `${getStockName(code)}(${code})`);
+            setContent('detailPrice', data.price || '-');
             
             const change = data.change || 0;
             const changeText = change >= 0 ? `+${change.toFixed(2)}%` : `${change.toFixed(2)}%`;
             const changeEl = document.getElementById('detailChange');
-            changeEl.textContent = changeText;
-            changeEl.className = `detail-change ${change >= 0 ? 'up' : 'down'}`;
+            if (changeEl) {
+                changeEl.textContent = changeText;
+                changeEl.className = `detail-change ${change >= 0 ? 'up' : 'down'}`;
+            }
 
-            document.getElementById('detailKD').textContent = `K=${data.kd || '-'}`;
-            document.getElementById('detailMA20').textContent = data.ma20 || '-';
+            setContent('detailKD', `K=${data.kd || '-'}`);
+            setContent('detailMA20', data.ma20 || '-');
+            
             const ma20DiffStr = data.ma20Diff || '0';
             const ma20DiffVal = parseFloat(ma20DiffStr) || 0;
-            document.getElementById('detailMA20Diff').textContent = `${ma20DiffVal >= 0 ? '+' : ''}${ma20DiffVal.toFixed(2)}%`;
+            setContent('detailMA20Diff', `${ma20DiffVal >= 0 ? '+' : ''}${ma20DiffVal.toFixed(2)}%`);
 
             // MACD 判斷
             const ma20DiffNum = parseFloat(data.ma20Diff) || 0;
-            const macdText = ma20DiffNum > 0 ? '偏多' : '偏空';
-            document.getElementById('detailMACD').textContent = macdText;
+            setContent('detailMACD', ma20DiffNum > 0 ? '偏多' : '偏空');
 
             // 資券資料
-            document.getElementById('detailMargin').textContent = data.margin || '-';
-            document.getElementById('detailShort').textContent = data.short || '-';
-            document.getElementById('detailShortRatio').textContent = data.shortRatio || '-';
-            document.getElementById('detailForeign').textContent = data.foreign || '-';
-            
-            // 借券資料 - 這些元素現在在 borrowModal 中
-            // 不需要在 detailModal 中設置
+            setContent('detailMargin', data.margin || '-');
+            setContent('detailShort', data.short || '-');
+            setContent('detailShortRatio', data.shortRatio || '-');
+            setContent('detailForeign', data.foreign || '-');
             
             // 法人買賣超顏色
             const foreignEl = document.getElementById('detailForeign');
-            if (data.foreign && data.foreign !== '-') {
+            if (foreignEl && data.foreign && data.foreign !== '-') {
                 const foreignNum = parseFloat(String(data.foreign).replace(/,/g, '').replace('+', ''));
                 if (foreignNum > 0) {
                     foreignEl.style.color = 'var(--green)';
@@ -778,14 +783,18 @@
                 }
             }
 
-            // 新聞 (模擬)
-            document.getElementById('newsList').innerHTML = `
-                <div class="news-item">📰 ${getStockName(code)} 公佈最新財報</div>
-                <div class="news-item">📰 法人買賣超異動</div>
-                <div class="news-item">📰 產業趨勢分析</div>
-            `;
+            // 新聞
+            const newsListEl = document.getElementById('newsList');
+            if (newsListEl) {
+                newsListEl.innerHTML = `
+                    <div class="news-item">📰 ${getStockName(code)} 公佈最新財報</div>
+                    <div class="news-item">📰 法人買賣超異動</div>
+                    <div class="news-item">📰 產業趨勢分析</div>
+                `;
+            }
 
-            document.getElementById('detailModal').classList.add('show');
+            const modal = document.getElementById('detailModal');
+            if (modal) modal.classList.add('show');
         }
 
         // 關閉詳細資料
