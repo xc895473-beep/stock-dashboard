@@ -508,7 +508,9 @@
                 const dateStr = `${year}${month}${day}`;
                 
                 const url = `https://openapi.twse.com.tw/v1/exchangeReport/STOCK_DAY_ALL?date=${dateStr}`;
-                const response = await fetch(url);
+                // 使用 CORS 代理
+                const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url);
+                const response = await fetch(proxyUrl);
                 const allStocks = await response.json();
                 
                 // 尋找對應的股票
@@ -588,14 +590,16 @@
                 const month = String(today.getMonth() + 1).padStart(2, '0');
                 const dateStr = `${year}${month}`;
                 
-                // 融資融券資料
+                // 融資融券資料 - 使用 CORS 代理
                 const marginUrl = `https://openapi.twse.com.tw/v1/exchangeReport/MI_MARGN?date=${dateStr}`;
-                const marginRes = await fetch(marginUrl);
+                const marginProxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(marginUrl);
+                const marginRes = await fetch(marginProxyUrl);
                 const marginData = await marginRes.json();
                 
-                // 法人買賣超資料
+                // 法人買賣超資料 - 使用 CORS 代理
                 const foreignUrl = `https://openapi.twse.com.tw/v1/exchangeReport/FMTQIK?response=json`;
-                const foreignRes = await fetch(foreignUrl);
+                const foreignProxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(foreignUrl);
+                const foreignRes = await fetch(foreignProxyUrl);
                 const foreignData = await foreignRes.json();
                 
                 // 注意：API 回傳中文欄位名稱
