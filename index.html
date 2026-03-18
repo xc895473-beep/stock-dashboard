@@ -450,7 +450,7 @@
             </div>
 
             <div class="detail-section">
-                <h3>📈 三個月每日資料</h3>
+                <h3>📈 當月資料</h3>
                 <div class="news-list" id="borrowHistoryList" style="max-height: 300px;">
                     <div class="news-item">載入中...</div>
                 </div>
@@ -846,33 +846,30 @@
             }
         }
 
-        // 取得借券歷史資料 (三個月)
+        // 取得借券歷史資料 (當月)
         async function fetchBorrowHistory(code) {
             try {
                 const history = [];
                 const today = new Date();
                 
-                // 取得最近 3 個月的每月資料
-                for (let i = 0; i < 3; i++) {
-                    const date = new Date(today.getFullYear(), today.getMonth() - i, 1);
-                    const year = date.getFullYear() - 1911;
-                    const month = String(date.getMonth() + 1).padStart(2, '0');
-                    const dateStr = `${year}${month}`;
-                    
-                    const url = `https://openapi.twse.com.tw/v1/exchangeReport/MI_MARGN?date=${dateStr}`;
-                    const proxyUrl = 'https://corsproxy.io/?' + encodeURIComponent(url);
-                    const response = await fetch(proxyUrl);
-                    const data = await response.json();
-                    
-                    const stock = data.find(s => s['股票代號'] === code);
-                    if (stock) {
-                        history.push({
-                            date: `${year}/${month}`,
-                            sale: stock['融券賣出'] || '-',
-                            return: stock['融券現券償還'] || '-',
-                            balance: stock['融券今日餘額'] || '-'
-                        });
-                    }
+                // 取得當月資料
+                const year = today.getFullYear() - 1911;
+                const month = String(today.getMonth() + 1).padStart(2, '0');
+                const dateStr = `${year}${month}`;
+                
+                const url = `https://openapi.twse.com.tw/v1/exchangeReport/MI_MARGN?date=${dateStr}`;
+                const proxyUrl = 'https://corsproxy.io/?' + encodeURIComponent(url);
+                const response = await fetch(proxyUrl);
+                const data = await response.json();
+                
+                const stock = data.find(s => s['股票代號'] === code);
+                if (stock) {
+                    history.push({
+                        date: `${year}/${month} (當月)`,
+                        sale: stock['融券賣出'] || '-',
+                        return: stock['融券現券償還'] || '-',
+                        balance: stock['融券今日餘額'] || '-'
+                    });
                 }
                 
                 return history;
