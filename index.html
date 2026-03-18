@@ -631,10 +631,13 @@
 
             document.getElementById('detailKD').textContent = `K=${data.kd || '-'}`;
             document.getElementById('detailMA20').textContent = data.ma20 || '-';
-            document.getElementById('detailMA20Diff').textContent = `${data.ma20Diff >= 0 ? '+' : ''}${data.ma20Diff.toFixed(2)}%`;
+            const ma20DiffStr = data.ma20Diff || '0';
+            const ma20DiffVal = parseFloat(ma20DiffStr) || 0;
+            document.getElementById('detailMA20Diff').textContent = `${ma20DiffVal >= 0 ? '+' : ''}${ma20DiffVal.toFixed(2)}%`;
 
             // MACD 判斷
-            const macdText = data.ma20Diff > 0 ? '偏多' : '偏空';
+            const ma20DiffNum = parseFloat(data.ma20Diff) || 0;
+            const macdText = ma20DiffNum > 0 ? '偏多' : '偏空';
             document.getElementById('detailMACD').textContent = macdText;
 
             // 資券資料
@@ -647,7 +650,7 @@
             // 法人買賣超顏色
             const foreignEl = document.getElementById('detailForeign');
             if (data.foreign && data.foreign !== '-') {
-                const foreignNum = parseFloat(String(data.foreign).replace(/,/g, ''));
+                const foreignNum = parseFloat(String(data.foreign).replace(/,/g, '').replace('+', ''));
                 if (foreignNum > 0) {
                     foreignEl.style.color = 'var(--green)';
                 } else if (foreignNum < 0) {
