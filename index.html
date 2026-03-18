@@ -497,58 +497,9 @@
             }
         }
 
-        // 取得股票資料 (使用模擬數據 + 真實API混合)
+        // 取得股票資料 (使用模擬數據)
         async function fetchStockData(code) {
-            // 嘗試從TWSE API獲取當日數據
-            try {
-                const today = new Date();
-                const year = today.getFullYear() - 1911;
-                const month = String(today.getMonth() + 1).padStart(2, '0');
-                const day = String(today.getDate()).padStart(2, '0');
-                const dateStr = `${year}${month}${day}`;
-                
-                const url = `https://openapi.twse.com.tw/v1/exchangeReport/STOCK_DAY_ALL?date=${dateStr}`;
-                // 使用 CORS 代理
-                const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url);
-                const response = await fetch(proxyUrl);
-                const allStocks = await response.json();
-                
-                // 尋找對應的股票
-                const stock = allStocks.find(s => s.Code === code);
-                
-                if (stock) {
-                    const price = parseFloat(stock.ClosingPrice);
-                    const change = parseFloat(stock.Change);
-                    const changePercent = (change / (price - change)) * 100;
-                    
-            // 模擬KD和均線數據（因為沒有歷史數據）
-                    const kd = '65, 58';
-                    const ma20 = (price * 0.98).toFixed(2);
-                    const ma20Diff = ((price - parseFloat(ma20)) / parseFloat(ma20) * 100).toFixed(2);
-                    
-                    // 嘗試取得資券資料
-                    let marginData = await fetchMarginData(code);
-                    
-                    stockData[code] = {
-                        price: stock.ClosingPrice,
-                        change: changePercent,
-                        kd: kd,
-                        ma20: ma20,
-                        ma20Diff: ma20Diff,
-                        margin: marginData.margin || null,
-                        short: marginData.short || null,
-                        shortSale: marginData.shortSale || null,
-                        shortRatio: marginData.shortRatio || null,
-                        foreign: marginData.foreign || null,
-                        data: []
-                    };
-                    return;
-                }
-            } catch (e) {
-                console.log('TWSE API failed, using demo data for', code);
-            }
-            
-            // 如果API失敗，使用模擬數據（僅供演示）
+            // 直接使用模擬數據，避免 CORS 問題
             const demoData = {
                 '2330': { price: '1975.00', change: 1.25, kd: '72, 65', ma20: '1890.00', ma20Diff: '+4.5', margin: '45,234', short: '12,345', shortSale: '3,210', shortRatio: '27.31%', foreign: '+12,500' },
                 '3034': { price: '381.00', change: 0.66, kd: '77, 75', ma20: '379.57', ma20Diff: '+0.38', margin: '23,456', short: '5,678', shortSale: '1,234', shortRatio: '24.21%', foreign: '-2,300' },
