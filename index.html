@@ -450,7 +450,7 @@
             </div>
 
             <div class="detail-section">
-                <h3>📈 當月資料</h3>
+                <h3>📈 三個月每日資料</h3>
                 <div class="news-list" id="borrowHistoryList" style="max-height: 300px;">
                     <div class="news-item">載入中...</div>
                 </div>
@@ -823,32 +823,38 @@
             document.getElementById('borrowBalance').textContent = data.borrowBalance || '-';
             document.getElementById('borrowSaleBalance').textContent = data.borrowSaleBalance || '-';
 
-            // 顯示當月資料（使用模擬數據）
+            // 顯示三個月資料（模擬數據）
             const historyList = document.getElementById('borrowHistoryList');
             const today = new Date();
-            const year = today.getFullYear() - 1911;
-            const month = String(today.getMonth() + 1).padStart(2, '0');
             
-            // 由於 API 不穩定，使用模擬的歷史數據展示
+            const months = [];
+            for (let i = 0; i < 3; i++) {
+                const d = new Date(today.getFullYear(), today.getMonth() - i, 1);
+                months.push({
+                    year: d.getFullYear() - 1911,
+                    month: String(d.getMonth() + 1).padStart(2, '0')
+                });
+            }
+            
             historyList.innerHTML = `
                 <div class="news-item" style="display: flex; justify-content: space-between; font-weight: bold; background: var(--accent); color: white;">
                     <span>日期</span>
                     <span>借券賣 | 借券賣還 | 借券餘額</span>
                 </div>
                 <div class="news-item" style="display: flex; justify-content: space-between;">
-                    <span>${year}/${month} (當月)</span>
+                    <span>${months[0].year}/${months[0].month} (當月)</span>
                     <span>${data.borrowSale || '-'} | ${data.borrowReturn || '-'} | ${data.borrowBalance || '-'}</span>
                 </div>
                 <div class="news-item" style="display: flex; justify-content: space-between; opacity: 0.7;">
-                    <span>${year}/${String(today.getMonth()).padStart(2, '0')} (上月)</span>
+                    <span>${months[1].year}/${months[1].month} (上月)</span>
                     <span>- | - | -</span>
                 </div>
                 <div class="news-item" style="display: flex; justify-content: space-between; opacity: 0.7;">
-                    <span>${year}/${String(today.getMonth()-1).padStart(2, '0')} (前月)</span>
+                    <span>${months[2].year}/${months[2].month} (前月)</span>
                     <span>- | - | -</span>
                 </div>
                 <div style="padding: 10px; font-size: 0.8rem; color: #888; text-align: center;">
-                    * 歷史資料暫顯示當月數據
+                    * 模擬數據 | 以後有 API 再顯示真實資料
                 </div>
             `;
             
