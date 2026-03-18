@@ -306,6 +306,21 @@
             cursor: pointer;
             font-size: 0.85rem;
         }
+
+        .borrow-btn {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 1rem;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        .borrow-btn:active {
+            opacity: 0.8;
+        }
     </style>
 </head>
 <body>
@@ -384,23 +399,10 @@
                         <div class="label">法人買賣超</div>
                         <div class="value" id="detailForeign">-</div>
                     </div>
-                    <div class="detail-item">
-                        <div class="label">借券賣</div>
-                        <div class="value" id="detailBorrowSale">-</div>
-                    </div>
-                    <div class="detail-item">
-                        <div class="label">借券賣還</div>
-                        <div class="value" id="detailBorrowReturn">-</div>
-                    </div>
-                    <div class="detail-item">
-                        <div class="label">借券餘額</div>
-                        <div class="value" id="detailBorrowBalance">-</div>
-                    </div>
-                    <div class="detail-item">
-                        <div class="label">借券賣餘額</div>
-                        <div class="value" id="detailBorrowSaleBalance">-</div>
-                    </div>
                 </div>
+                <button class="borrow-btn" onclick="showBorrowDetail()" style="margin-top: 12px; width: 100%; padding: 12px; background: var(--accent); color: white; border: none; border-radius: 10px; font-size: 1rem; cursor: pointer;">
+                    📊 借券資料 (點擊查看詳情)
+                </button>
             </div>
 
             <div class="detail-section">
@@ -412,6 +414,49 @@
 
             <button class="delete-btn" onclick="deleteStock()">🗑️ 刪除此股票</button>
             <button class="modal-btn secondary" onclick="closeDetailModal()" style="margin-top: 12px; width: 100%">關閉</button>
+        </div>
+    </div>
+
+    <!-- 借券資料明細 Modal -->
+    <div class="modal detail-modal" id="borrowModal">
+        <div class="modal-content">
+            <div class="detail-header">
+                <div>
+                    <h2 id="borrowTitle">借券資料</h2>
+                </div>
+                <button onclick="closeBorrowModal()" style="background: transparent; border: none; color: white; font-size: 1.5rem; cursor: pointer;">✕</button>
+            </div>
+
+            <div class="detail-section">
+                <h3>📊 今日概況</h3>
+                <div class="detail-grid">
+                    <div class="detail-item">
+                        <div class="label">借券賣</div>
+                        <div class="value" id="borrowSale">-</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="label">借券賣還</div>
+                        <div class="value" id="borrowReturn">-</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="label">借券餘額</div>
+                        <div class="value" id="borrowBalance">-</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="label">借券賣餘額</div>
+                        <div class="value" id="borrowSaleBalance">-</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="detail-section">
+                <h3>📈 三個月每日資料</h3>
+                <div class="news-list" id="borrowHistoryList" style="max-height: 300px;">
+                    <div class="news-item">載入中...</div>
+                </div>
+            </div>
+
+            <button class="modal-btn secondary" onclick="closeBorrowModal()" style="width: 100%">關閉</button>
         </div>
     </div>
 
@@ -759,6 +804,81 @@
             saveWatchList();
             closeDetailModal();
             renderStockList();
+        }
+
+        // 顯示借券資料明細
+        async function showBorrowDetail() {
+            const data = stockData[currentStock];
+            if (!data) return;
+
+            document.getElementById('borrowTitle').textContent = `借券資料 - ${getStockName(currentStock)}(${currentStock})`;
+            document.getElementById('borrowSale').textContent = data.borrowSale || '-';
+            document.getElementById('borrowReturn').textContent = data.borrowReturn || '-';
+            document.getElementById('borrowBalance').textContent = data.borrowBalance || '-';
+            document.getElementById('borrowSaleBalance').textContent = data.borrowSaleBalance || '-';
+
+            // 載入歷史資料
+            document.getElementById('borrowHistoryList').innerHTML = '<div class="news-item">載入歷史資料中...</div>';
+            document.getElementById('borrowModal').classList.add('show');
+
+            // 取得三個月歷史資料
+            const historyData = await fetchBorrowHistory(currentStock);
+            
+            if (historyData && historyData.length > 0) {
+                let html = '';
+                for (const item of historyData) {
+                    html += `
+                        <div class="news-item" style="display: flex; justify-content: space-between;">
+                            <span>${item.date}</span>
+                            <span>賣: ${item.sale || '-'} 還: ${item.return || '-'} 餘額: ${item.balance || '-'}</span>
+                        </div>
+                    `;
+                }
+                document.getElementById('borrowHistoryList').innerHTML = html;
+            } else {
+                document.getElementById('borrowHistoryList').innerHTML = '<div class="news-item">無法取得歷史資料</div>';
+            }
+        }
+
+        // 取得借券歷史資料 (三個月)
+        async function fetchBorrowHistory(code) {
+            try {
+                const history = [];
+                const today = new Date();
+                
+                // 取得最近 3 個月的每月資料
+                for (let i = 0; i < 3; i++) {
+                    const date = new Date(today.getFullYear(), today.getMonth() - i, 1);
+                    const year = date.getFullYear() - 1911;
+                    const month = String(date.getMonth() + 1).padStart(2, '0');
+                    const dateStr = `${year}${month}`;
+                    
+                    const url = `https://openapi.twse.com.tw/v1/exchangeReport/MI_MARGN?date=${dateStr}`;
+                    const proxyUrl = 'https://corsproxy.io/?' + encodeURIComponent(url);
+                    const response = await fetch(proxyUrl);
+                    const data = await response.json();
+                    
+                    const stock = data.find(s => s['股票代號'] === code);
+                    if (stock) {
+                        history.push({
+                            date: `${year}/${month}`,
+                            sale: stock['融券賣出'] || '-',
+                            return: stock['融券現券償還'] || '-',
+                            balance: stock['融券今日餘額'] || '-'
+                        });
+                    }
+                }
+                
+                return history;
+            } catch (e) {
+                console.log('Failed to fetch borrow history:', e);
+                return [];
+            }
+        }
+
+        // 關閉借券資料
+        function closeBorrowModal() {
+            document.getElementById('borrowModal').classList.remove('show');
         }
 
         // 初始載入
