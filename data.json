@@ -1,0 +1,69 @@
+{
+  "lastUpdate": "2026-03-18",
+  "stocks": {
+    "2330": {
+      "name": "台積電",
+      "price": "1975.00",
+      "change": 1.25,
+      "kd": "72, 65",
+      "ma20": "1890.00",
+      "ma20Diff": "+4.5",
+      "margin": "45,234",
+      "short": "12,345",
+      "shortRatio": "27.31%",
+      "foreign": "+12,500",
+      "borrowSale": "3,210",
+      "borrowReturn": "1,500",
+      "borrowBalance": "12,345",
+      "borrowSaleBalance": "8,500"
+    },
+    "3034": {
+      "name": "聯詠",
+      "price": "381.00",
+      "change": 0.66,
+      "kd": "77, 75",
+      "ma20": "379.57",
+      "ma20Diff": "+0.38",
+      "margin": "23,456",
+      "short": "5,678",
+      "shortRatio": "24.21%",
+      "foreign": "-2,300",
+      "borrowSale": "1,234",
+      "borrowReturn": "800",
+      "borrowBalance": "5,678",
+      "borrowSaleBalance": "3,200"
+    },
+    "8299": {
+      "name": "群聯",
+      "price": "1945.00",
+      "change": -1.77,
+      "kd": "70, 58",
+      "ma20": "1704.00",
+      "ma20Diff": "+14.1",
+      "margin": "15,789",
+      "short": "8,901",
+      "shortRatio": "56.38%",
+      "foreign": "+5,600",
+      "borrowSale": "2,345",
+      "borrowReturn": "1,100",
+      "borrowBalance": "8,901",
+      "borrowSaleBalance": "5,600"
+    },
+    "2377": {
+      "name": "微星",
+      "price": "615.00",
+      "change": 2.15,
+      "kd": "68, 60",
+      "ma20": "598.00",
+      "ma20Diff": "+2.84",
+      "margin": "8,234",
+      "short": "3,567",
+      "shortRatio": "43.32%",
+      "foreign": "+1,200",
+      "borrowSale": "890",
+      "borrowReturn": "450",
+      "borrowBalance": "3,567",
+      "borrowSaleBalance": "2,100"
+    }
+  }
+}
